@@ -1,0 +1,48 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/auth
+    username: fitcore
+    password: fitcorepass
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+#  rabbitmq:
+#    host: rabbitmq
+#    port: 5672
+#    username: admin
+#    password: admin
+
+server:
+  port: 8082
+
+minio:
+  url: http://localhost:9000
+  access-key: minio
+  secret-key: minio123
+  bucket: fitcore-exercises
+  external-url: http://localhost:9000
+
+logging:
+  level:
+    root: INFO
+    org.springframework.web: DEBUG
+    com.fitcore: DEBUG
+#    org.springframework.amqp: DEBUG
+#    org.springframework.amqp.rabbit: DEBUG
+#    org.springframework.amqp.rabbit.core: DEBUG
+#    org.springframework.amqp.rabbit.connection: DEBUG
+
+#profiles:
+#  active: seed
+#  
+#management:
+#  endpoints:
+#    web:
+#      exposure:
+#        include: health,info,metrics,prometheus
+#  endpoint:
+#    prometheus:
+#      enabled: true
