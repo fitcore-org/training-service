@@ -19,7 +19,8 @@ class ExerciseService(
             description = request.description,
             muscleGroup = request.muscleGroup,
             equipment = request.equipment,
-            mediaUrl = request.mediaUrl
+            mediaUrl = request.mediaUrl,
+            mediaUrl2 = request.mediaUrl2
         )
         return repositoryPort.save(exercise).toResponse()
     }

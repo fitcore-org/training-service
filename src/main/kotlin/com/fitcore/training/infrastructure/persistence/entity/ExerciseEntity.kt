@@ -11,5 +11,6 @@ class ExerciseEntity(
     @Column(columnDefinition = "TEXT") var description: String?,
     var muscleGroup: String?,
     var equipment: String?,
-    var mediaUrl: String?
+    var mediaUrl: String?,
+    @Column(name = "media_url_2") var mediaUrl2: String?
 )

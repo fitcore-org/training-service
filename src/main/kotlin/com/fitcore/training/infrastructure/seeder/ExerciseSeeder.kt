@@ -45,7 +45,8 @@ class ExerciseSeeder(
 
     override fun run(vararg args: String?) {
         if (repositoryPort.findAll().isNotEmpty()) {
-            logger.info("Banco de dados já populado. Seeder não será executado.")
+            logger.info("Banco de dados já populado. Verificando se precisamos atualizar imagens...")
+            checkAndUpdateExistingExercises()
             return
         }
 
@@ -84,10 +85,11 @@ class ExerciseSeeder(
                         description = source.instructions.joinToString("\n"),
                         muscleGroup = source.primaryMuscles.joinToString(", "),
                         equipment = source.equipment ?: "Não especificado",
-                        mediaUrl = uploadedUrls.firstOrNull() // Pega a primeira imagem como URL principal
+                        mediaUrl = uploadedUrls.getOrNull(0), // Primeira imagem
+                        mediaUrl2 = uploadedUrls.getOrNull(1) // Segunda imagem
                     )
                     exerciseUseCase.create(request)
-                    logger.info("Exercício '$exerciseName' salvo com ${uploadedUrls.size} imagens.")
+                    logger.info("Exercício '$exerciseName' salvo com ${uploadedUrls.size} imagens: ${if (uploadedUrls.size >= 2) "ambas as URLs salvas" else "apenas 1 URL disponível"}.")
 
                 } catch (e: Exception) {
                     logger.error("ERRO ao processar o exercício '$exerciseName': ${e.message}")
@@ -124,7 +126,8 @@ class ExerciseSeeder(
                         description = "Descrição detalhada do exercício $name",
                         muscleGroup = muscleGroup, 
                         equipment = equipment, 
-                        mediaUrl = mediaUrl
+                        mediaUrl = mediaUrl,
+                        mediaUrl2 = null // Seeder básico só tem uma imagem
                     )
                     exerciseUseCase.create(request)
                     logger.info("'$name' salvo com sucesso. URL: $mediaUrl")
@@ -135,7 +138,8 @@ class ExerciseSeeder(
                         description = "Descrição detalhada do exercício $name",
                         muscleGroup = muscleGroup, 
                         equipment = equipment, 
-                        mediaUrl = null
+                        mediaUrl = null,
+                        mediaUrl2 = null
                     )
                     exerciseUseCase.create(request)
                     logger.info("'$name' salvo com sucesso sem mídia.")
@@ -145,6 +149,75 @@ class ExerciseSeeder(
             }
         } else {
             logger.info("Exercício '$name' já existe no banco de dados. Pulando...")
+        }
+    }
+
+    /**
+     * Verifica e atualiza exercícios existentes que não têm mediaUrl2 mas deveriam ter
+     */
+    private fun checkAndUpdateExistingExercises() {
+        try {
+            logger.info("--- Verificando Exercícios Existentes para Atualização ---")
+            
+            val existingExercises = repositoryPort.findAll()
+            val exercisesNeedingUpdate = existingExercises.filter { exercise ->
+                // Exercícios que não têm mediaUrl2 mas vieram do GitHub (padrão conhecido)
+                exercise.mediaUrl2 == null && 
+                exercise.mediaUrl != null && 
+                (exercise.mediaUrl!!.contains("0.jpg") || exercise.mediaUrl!!.contains("_0.jpg"))
+            }
+
+            if (exercisesNeedingUpdate.isEmpty()) {
+                logger.info("Todos os exercícios já estão atualizados com as duas imagens.")
+                return
+            }
+
+            logger.info("Encontrados ${exercisesNeedingUpdate.size} exercícios que precisam de atualização.")
+
+            // Carregar os dados originais do JSON para reprocessar
+            val jsonResource = ClassPathResource("seed/exercises_source.json")
+            if (!jsonResource.exists()) {
+                logger.warn("Arquivo exercises_source.json não encontrado. Não é possível atualizar exercícios existentes.")
+                return
+            }
+
+            val allExercises: List<ExerciseSourceDTO> = objectMapper.readValue(
+                jsonResource.inputStream, 
+                objectMapper.typeFactory.constructCollectionType(List::class.java, ExerciseSourceDTO::class.java)
+            )
+
+            exercisesNeedingUpdate.forEach { exercise ->
+                try {
+                    // Encontrar o exercício original no JSON
+                    val sourceExercise = allExercises.find { it.name == exercise.name }
+                    
+                    if (sourceExercise != null && sourceExercise.images.size >= 2) {
+                        logger.info("Atualizando exercício '${exercise.name}' com segunda imagem...")
+                        
+                        // Upload da segunda imagem
+                        val secondImagePath = sourceExercise.images[1]
+                        val fullImageUrl = GITHUB_IMAGE_BASE_URL + secondImagePath
+                        val imageInputStream = URL(fullImageUrl).openStream()
+                        val fileName = secondImagePath.replace("/", "_")
+                        val secondImageUrl = minioAdapter.upload(fileName, imageInputStream)
+                        
+                        // Atualizar o exercício
+                        exercise.mediaUrl2 = secondImageUrl
+                        repositoryPort.save(exercise)
+                        
+                        logger.info("✅ Exercício '${exercise.name}' atualizado com segunda imagem: $secondImageUrl")
+                    } else {
+                        logger.info("⚠️ Exercício '${exercise.name}' não encontrado no source ou só tem uma imagem.")
+                    }
+                } catch (e: Exception) {
+                    logger.error("❌ Erro ao atualizar exercício '${exercise.name}': ${e.message}")
+                }
+            }
+            
+            logger.info("--- Atualização de Exercícios Finalizada ---")
+            
+        } catch (e: Exception) {
+            logger.error("Erro durante verificação/atualização de exercícios existentes: ${e.message}")
         }
     }
 }

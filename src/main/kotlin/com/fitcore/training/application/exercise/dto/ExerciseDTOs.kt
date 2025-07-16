@@ -8,7 +8,8 @@ data class ExerciseRequest(
     val description: String?,
     val muscleGroup: String?,
     val equipment: String?,
-    val mediaUrl: String?
+    val mediaUrl: String?,
+    val mediaUrl2: String?
 )
 
 data class ExerciseResponse(
@@ -17,7 +18,8 @@ data class ExerciseResponse(
     val description: String?,
     val muscleGroup: String?,
     val equipment: String?,
-    val mediaUrl: String?
+    val mediaUrl: String?,
+    val mediaUrl2: String?
 )
 
 fun Exercise.toResponse(): ExerciseResponse = ExerciseResponse(
@@ -26,5 +28,6 @@ fun Exercise.toResponse(): ExerciseResponse = ExerciseResponse(
     description = this.description,
     muscleGroup = this.muscleGroup,
     equipment = this.equipment,
-    mediaUrl = this.mediaUrl
+    mediaUrl = this.mediaUrl,
+    mediaUrl2 = this.mediaUrl2
 )

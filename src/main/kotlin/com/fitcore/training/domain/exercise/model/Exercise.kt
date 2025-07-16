@@ -9,7 +9,8 @@ class Exercise(
     var description: String?,
     var muscleGroup: String?,
     var equipment: String?,
-    var mediaUrl: String?
+    var mediaUrl: String?,
+    var mediaUrl2: String?
 ) {
     // Invariante de negócio garantida pelo domínio.
     init {
