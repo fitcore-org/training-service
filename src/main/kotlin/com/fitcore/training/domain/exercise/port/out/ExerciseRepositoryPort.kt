@@ -9,4 +9,5 @@ interface ExerciseRepositoryPort {
     fun findAll(): List<Exercise>
     fun findById(id: UUID): Exercise?
     fun findByName(name: String): Exercise?
+    fun deleteAll()
 }

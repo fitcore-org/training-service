@@ -23,4 +23,8 @@ class WorkoutTemplateRepositoryAdapter(
     override fun findAllPublic(): List<WorkoutTemplate> {
         return jpaRepository.findByIsPublicTrue().map { it.toDomain() }
     }
+
+    override fun deleteAll() {
+        jpaRepository.deleteAll()
+    }
 }

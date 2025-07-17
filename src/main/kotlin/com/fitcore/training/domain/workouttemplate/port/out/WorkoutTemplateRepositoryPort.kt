@@ -7,4 +7,5 @@ interface WorkoutTemplateRepositoryPort {
     fun save(workoutTemplate: WorkoutTemplate): WorkoutTemplate
     fun findById(id: UUID): WorkoutTemplate?
     fun findAllPublic(): List<WorkoutTemplate>
+    fun deleteAll()
 }

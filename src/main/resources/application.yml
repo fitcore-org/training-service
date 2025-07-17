@@ -25,6 +25,11 @@ minio:
   bucket: fitcore-exercises
   external-url: http://localhost:9000
 
+# DeepL API Configuration
+deepl:
+  api:
+    key: YOUR_DEEPL_API_KEY_HERE # Substitua pela sua chave da API DeepL
+
 logging:
   level:
     root: INFO

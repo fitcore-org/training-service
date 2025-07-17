@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fitcore.training.application.exercise.dto.ExerciseRequest
 import com.fitcore.training.application.exercise.port.`in`.ExerciseUseCase
 import com.fitcore.training.domain.exercise.port.out.ExerciseRepositoryPort
+import com.fitcore.training.domain.workouttemplate.port.out.WorkoutTemplateRepositoryPort
 import com.fitcore.training.infrastructure.minio.adapter.MinioAdapter
 import com.fitcore.training.infrastructure.seeder.dto.ExerciseSourceDTO
 import org.slf4j.LoggerFactory
@@ -18,8 +19,10 @@ import java.net.URL
 class ExerciseSeeder(
     private val exerciseUseCase: ExerciseUseCase,
     private val repositoryPort: ExerciseRepositoryPort,
+    private val workoutRepositoryPort: WorkoutTemplateRepositoryPort,
     private val minioAdapter: MinioAdapter,
-    private val objectMapper: ObjectMapper
+    private val objectMapper: ObjectMapper,
+    private val translationService: TranslationService
 ) : CommandLineRunner {
     private val logger = LoggerFactory.getLogger(javaClass)
 
@@ -44,7 +47,15 @@ class ExerciseSeeder(
     }
 
     override fun run(vararg args: String?) {
-        if (repositoryPort.findAll().isNotEmpty()) {
+        // Verifica se deve limpar o banco antes de popular (parâmetro --clear-db)
+        val shouldClearDatabase = args.contains("--clear-db")
+        
+        if (shouldClearDatabase) {
+            logger.info("🗑️ Limpando banco de dados de exercícios e bucket MinIO...")
+            clearDatabaseAndBucket()
+        }
+
+        if (!shouldClearDatabase && repositoryPort.findAll().isNotEmpty()) {
             logger.info("Banco de dados já populado. Verificando se precisamos atualizar imagens...")
             checkAndUpdateExistingExercises()
             return
@@ -69,8 +80,17 @@ class ExerciseSeeder(
             logger.info("${exercisesToSeed.size} de ${desiredExerciseIds.size} exercícios desejados foram encontrados na fonte. Iniciando ingestão...")
 
             exercisesToSeed.forEach { source ->
-                val exerciseName = source.name
                 try {
+                    logger.info("🌍 Processando e traduzindo exercício: ${source.name}")
+                    
+                    // Traduz apenas os campos relevantes (não traduz IDs nem nomes de arquivos)
+                    val translatedName = translationService.translateExerciseName(source.name)
+                    val translatedDescription = translationService.translateInstructions(source.instructions)
+                    val translatedMuscleGroup = translationService.translateMuscleGroups(source.primaryMuscles)
+                    val translatedEquipment = translationService.translateEquipment(source.equipment)
+
+                    logger.info("✅ Traduzido: '$translatedName' - Músculos: '$translatedMuscleGroup'")
+
                     val uploadedUrls = mutableListOf<String>()
                     source.images.forEach { imagePath ->
                         val fullImageUrl = GITHUB_IMAGE_BASE_URL + imagePath
@@ -81,21 +101,26 @@ class ExerciseSeeder(
                     }
 
                     val request = ExerciseRequest(
-                        name = exerciseName,
-                        description = source.instructions.joinToString("\n"),
-                        muscleGroup = source.primaryMuscles.joinToString(", "),
-                        equipment = source.equipment ?: "Não especificado",
+                        name = translatedName,
+                        description = translatedDescription,
+                        muscleGroup = translatedMuscleGroup,
+                        equipment = translatedEquipment,
                         mediaUrl = uploadedUrls.getOrNull(0), // Primeira imagem
                         mediaUrl2 = uploadedUrls.getOrNull(1) // Segunda imagem
                     )
                     exerciseUseCase.create(request)
-                    logger.info("Exercício '$exerciseName' salvo com ${uploadedUrls.size} imagens: ${if (uploadedUrls.size >= 2) "ambas as URLs salvas" else "apenas 1 URL disponível"}.")
+                    logger.info("💾 Exercício '$translatedName' salvo com ${uploadedUrls.size} imagens.")
 
                 } catch (e: Exception) {
-                    logger.error("ERRO ao processar o exercício '$exerciseName': ${e.message}")
+                    logger.error("❌ ERRO ao processar o exercício '${source.name}': ${e.message}")
                 }
             }
             logger.info("--- Seeder Seletivo Finalizado ---")
+            
+            // Exibe estatísticas de tradução
+            val cacheStats = translationService.getCacheStats()
+            logger.info("📊 Estatísticas de Tradução: ${cacheStats["cacheSize"]} traduções realizadas")
+            
         } catch (e: Exception) {
             logger.error("Erro no seeder seletivo: ${e.message}. Executando seeder básico como fallback...")
             runBasicSeeder()
@@ -103,7 +128,7 @@ class ExerciseSeeder(
     }
 
     private fun runBasicSeeder() {
-        logger.info("--- Iniciando Seeder Básico de Exercícios ---")
+        logger.info("--- Iniciando Seeder Básico de Exercícios (já em português) ---")
         seedExercise("Supino Reto", "Peitoral", "Barra", "supino-reto.jpg")
         seedExercise("Agachamento", "Quadríceps", "Peso Corporal", "agachamento.jpg")
         seedExercise("Flexão de Braço", "Peitoral", "Peso Corporal", "flexao.jpg")
@@ -149,6 +174,31 @@ class ExerciseSeeder(
             }
         } else {
             logger.info("Exercício '$name' já existe no banco de dados. Pulando...")
+        }
+    }
+
+    /**
+     * Limpa o banco de dados de exercícios respeitando foreign keys
+     */
+    private fun clearDatabaseAndBucket() {
+        try {
+            logger.info("🗑️ Iniciando limpeza do banco de dados...")
+            
+            // 1. Primeiro remove os workouts (que referenciam exercícios)
+            logger.info("🗑️ Removendo todos os workout templates...")
+            workoutRepositoryPort.deleteAll()
+            logger.info("✅ Workout templates removidos.")
+            
+            // 2. Depois remove os exercícios
+            logger.info("🗑️ Removendo todos os exercícios...")
+            repositoryPort.deleteAll()
+            logger.info("✅ Exercícios removidos.")
+
+            logger.info("⚠️ Lembre-se de limpar o bucket MinIO manualmente se necessário.")
+            logger.info("🧹 Limpeza do banco de dados concluída. Pronto para nova população.")
+        } catch (e: Exception) {
+            logger.error("❌ Erro durante limpeza: ${e.message}")
+            throw e
         }
     }
 

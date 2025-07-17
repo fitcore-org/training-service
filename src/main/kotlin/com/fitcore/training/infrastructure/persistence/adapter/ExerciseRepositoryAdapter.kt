@@ -27,4 +27,8 @@ class ExerciseRepositoryAdapter(
     override fun findByName(name: String): Exercise? {
         return jpaRepository.findByName(name)?.toDomain()
     }
+
+    override fun deleteAll() {
+        jpaRepository.deleteAll()
+    }
 }
