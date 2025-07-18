@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/auth
+    url: jdbc:postgresql://postgres:5432/auth
     username: fitcore
     password: fitcorepass
   jpa:
@@ -8,18 +8,15 @@ spring:
       ddl-auto: update
     show-sql: true
     database-platform: org.hibernate.dialect.PostgreSQLDialect
-
-#  rabbitmq:
-#    host: rabbitmq
-#    port: 5672
-#    username: admin
-#    password: admin
+  flyway:
+    baseline-on-migrate: true
+    baseline-version: 0
 
 server:
   port: 8082
 
 minio:
-  url: http://localhost:9000
+  url: http://minio:9000
   access-key: minio
   secret-key: minio123
   bucket: fitcore-exercises
@@ -28,26 +25,10 @@ minio:
 # DeepL API Configuration
 deepl:
   api:
-    key: YOUR_DEEPL_API_KEY_HERE # Substitua pela sua chave da API DeepL
+    key: ${DEEPL_API_KEY:DEEPL_API_KEY}
 
 logging:
   level:
     root: INFO
     org.springframework.web: DEBUG
     com.fitcore: DEBUG
-#    org.springframework.amqp: DEBUG
-#    org.springframework.amqp.rabbit: DEBUG
-#    org.springframework.amqp.rabbit.core: DEBUG
-#    org.springframework.amqp.rabbit.connection: DEBUG
-
-#profiles:
-#  active: seed
-#  
-#management:
-#  endpoints:
-#    web:
-#      exposure:
-#        include: health,info,metrics,prometheus
-#  endpoint:
-#    prometheus:
-#      enabled: true

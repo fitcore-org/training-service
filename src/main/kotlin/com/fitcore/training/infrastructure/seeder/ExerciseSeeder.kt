@@ -26,8 +26,12 @@ class ExerciseSeeder(
 ) : CommandLineRunner {
     private val logger = LoggerFactory.getLogger(javaClass)
 
-    // --- SUA LISTA DE EXERCÍCIOS DESEJADOS ---
-    // Adicione ou remova os IDs dos exercícios que você quer aqui.
+    // --- CONTROLE DE TRADUÇÃO ---
+    // Alterar para 'false' para desativar tradução e economizar API calls
+    private val enableTranslation = false
+
+    // --- LISTA DE EXERCÍCIOS DESEJADOS ---
+    // Adicionar ou remover os IDs dos exercícios que você quer aqui.
     private val desiredExerciseIds = setOf(
         "Barbell_Bench_Press_-_Medium_Grip",
         "Barbell_Deadlift", 
@@ -73,7 +77,6 @@ class ExerciseSeeder(
 
             val allExercises: List<ExerciseSourceDTO> = objectMapper.readValue(jsonResource.inputStream, objectMapper.typeFactory.constructCollectionType(List::class.java, ExerciseSourceDTO::class.java))
 
-            // --- A MÁGICA ACONTECE AQUI ---
             // Filtramos a lista imensa para conter apenas os exercícios que queremos.
             val exercisesToSeed = allExercises.filter { it.id in desiredExerciseIds }
 
@@ -81,15 +84,38 @@ class ExerciseSeeder(
 
             exercisesToSeed.forEach { source ->
                 try {
-                    logger.info("🌍 Processando e traduzindo exercício: ${source.name}")
+                    logger.info("🌍 Processando exercício: ${source.name}")
                     
-                    // Traduz apenas os campos relevantes (não traduz IDs nem nomes de arquivos)
-                    val translatedName = translationService.translateExerciseName(source.name)
-                    val translatedDescription = translationService.translateInstructions(source.instructions)
-                    val translatedMuscleGroup = translationService.translateMuscleGroups(source.primaryMuscles)
-                    val translatedEquipment = translationService.translateEquipment(source.equipment)
+                    // Traduz apenas se a flag estiver habilitada
+                    val translatedName = if (enableTranslation) {
+                        translationService.translateExerciseName(source.name)
+                    } else {
+                        source.name // Usa o nome original em inglês
+                    }
+                    
+                    val translatedDescription = if (enableTranslation) {
+                        translationService.translateInstructions(source.instructions)
+                    } else {
+                        source.instructions.joinToString(". ") // Junta as instruções em inglês
+                    }
+                    
+                    val translatedMuscleGroup = if (enableTranslation) {
+                        translationService.translateMuscleGroups(source.primaryMuscles)
+                    } else {
+                        source.primaryMuscles.joinToString(", ") // Junta os músculos em inglês
+                    }
+                    
+                    val translatedEquipment = if (enableTranslation) {
+                        translationService.translateEquipment(source.equipment)
+                    } else {
+                        source.equipment ?: "Unknown" // Usa o equipamento em inglês
+                    }
 
-                    logger.info("✅ Traduzido: '$translatedName' - Músculos: '$translatedMuscleGroup'")
+                    if (enableTranslation) {
+                        logger.info("✅ Traduzido: '$translatedName' - Músculos: '$translatedMuscleGroup'")
+                    } else {
+                        logger.info("✅ Processado (sem tradução): '$translatedName' - Músculos: '$translatedMuscleGroup'")
+                    }
 
                     val uploadedUrls = mutableListOf<String>()
                     source.images.forEach { imagePath ->
@@ -117,9 +143,13 @@ class ExerciseSeeder(
             }
             logger.info("--- Seeder Seletivo Finalizado ---")
             
-            // Exibe estatísticas de tradução
-            val cacheStats = translationService.getCacheStats()
-            logger.info("📊 Estatísticas de Tradução: ${cacheStats["cacheSize"]} traduções realizadas")
+            // Exibe estatísticas de tradução apenas se a tradução estiver habilitada
+            if (enableTranslation) {
+                val cacheStats = translationService.getCacheStats()
+                logger.info("📊 Estatísticas de Tradução: ${cacheStats["cacheSize"]} traduções realizadas")
+            } else {
+                logger.info("📊 Tradução desabilitada - nenhuma API call foi feita")
+            }
             
         } catch (e: Exception) {
             logger.error("Erro no seeder seletivo: ${e.message}. Executando seeder básico como fallback...")

@@ -59,10 +59,10 @@ class WorkoutTemplateSeeder(
             logger.info("Criando treino de peito...")
             
             val exercises = listOf(
-                Triple("Supino reto com barra de apoio com empunhadura média", "4", "8-12"),
-                Triple("Flexão inclinada", "3", "12-15"),
-                Triple("Flexão em declive", "3", "10-12"),
-                Triple("3/4 Situp", "3", "15-20")
+                Triple("Barbell Bench Press - Medium Grip", "4", "8-12"),
+                Triple("Incline Push-Up", "3", "12-15"),
+                Triple("Decline Push-Up", "3", "10-12"),
+                Triple("3/4 Sit-Up", "3", "15-20")
             )
             
             val workoutItems = exercises.mapIndexedNotNull { index, (exerciseName, sets, reps) ->
@@ -111,10 +111,10 @@ class WorkoutTemplateSeeder(
             logger.info("Criando treino de costas...")
             
             val exercises = listOf(
-                Triple("Levantamento terra com barra", "4", "6-8"),
+                Triple("Barbell Deadlift", "4", "6-8"),
                 Triple("90/90 Hamstring", "3", "12-15"),
-                Triple("Flexões de parada de mão", "3", "5-8"),
-                Triple("3/4 Situp", "3", "15-20")
+                Triple("Handstand Push-Ups", "3", "5-8"),
+                Triple("3/4 Sit-Up", "3", "15-20")
             )
             
             val workoutItems = exercises.mapIndexedNotNull { index, (exerciseName, sets, reps) ->
@@ -163,9 +163,9 @@ class WorkoutTemplateSeeder(
             logger.info("Criando treino de pernas...")
             
             val exercises = listOf(
-                Triple("Agachamento completo com barra", "4", "8-10"),
-                Triple("Agachamento com peso corporal", "3", "15-20"),
-                Triple("Levantamento terra com barra", "3", "6-8"),
+                Triple("Barbell Full Squat", "4", "8-10"),
+                Triple("Bodyweight Squat", "3", "15-20"),
+                Triple("Barbell Deadlift", "3", "6-8"),
                 Triple("90/90 Hamstring", "3", "12-15")
             )
             
@@ -217,10 +217,10 @@ class WorkoutTemplateSeeder(
             logger.info("Criando treino Push (Empurrar)...")
             
             val exercises = listOf(
-                Triple("Supino reto com barra de apoio com empunhadura média", "4", "8-10"),
-                Triple("Flexões de parada de mão", "3", "5-8"),
-                Triple("Flexão Plyo", "3", "8-10"),
-                Triple("Flexão em declive", "3", "12-15")
+                Triple("Barbell Bench Press - Medium Grip", "4", "8-10"),
+                Triple("Handstand Push-Ups", "3", "5-8"),
+                Triple("Plyo Push-up", "3", "8-10"),
+                Triple("Decline Push-Up", "3", "12-15")
             )
             
             val workoutItems = exercises.mapIndexedNotNull { index, (exerciseName, sets, reps) ->
