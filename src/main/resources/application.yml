@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:postgresql://postgres:5432/auth
-    username: fitcore
-    password: fitcorepass
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:auth}
+    username: ${DB_USER:fitcore}
+    password: ${DB_PASS:fitcorepass}
   jpa:
     hibernate:
       ddl-auto: update
@@ -16,19 +16,34 @@ server:
   port: 8082
 
 minio:
-  url: http://minio:9000
-  access-key: minio
-  secret-key: minio123
+  url: ${MINIO_ENDPOINT:http://localhost:9000}
+  access-key: ${MINIO_ACCESS_KEY:minio}
+  secret-key: ${MINIO_SECRET_KEY:minio123}
   bucket: fitcore-exercises
-  external-url: http://localhost:9000
+  external-url: ${MINIO_EXTERNAL_URL:http://localhost:9000}
 
 # DeepL API Configuration
 deepl:
   api:
     key: ${DEEPL_API_KEY:DEEPL_API_KEY}
 
+# Translation Configuration
+translation:
+  enabled: ${TRANSLATION_ENABLED:false}
+
 logging:
   level:
     root: INFO
     org.springframework.web: DEBUG
     com.fitcore: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      enabled: true
+    prometheus:
+      enabled: true

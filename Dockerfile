@@ -1,18 +1,14 @@
-FROM openjdk:17-jdk-slim
-
+# Etapa 1: Build da aplicação
+FROM gradle:8.7.0-jdk17 AS build
 WORKDIR /app
+COPY . .
+RUN gradle bootJar --no-daemon
 
-COPY gradlew .
-COPY gradlew.bat .
-COPY gradle gradle
-COPY build.gradle.kts .
-COPY settings.gradle.kts .
-
-COPY src src
-
-RUN chmod +x gradlew
-RUN ./gradlew bootJar --no-daemon
+# Etapa 2: Imagem final
+FROM eclipse-temurin:17-jre-alpine
+WORKDIR /app
+COPY --from=build /app/build/libs/*.jar app.jar
 
 EXPOSE 8082
 
-CMD ["java", "-jar", "build/libs/training-service-0.0.1-SNAPSHOT.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]

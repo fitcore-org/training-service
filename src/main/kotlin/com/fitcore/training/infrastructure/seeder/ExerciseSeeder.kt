@@ -8,6 +8,7 @@ import com.fitcore.training.domain.workouttemplate.port.out.WorkoutTemplateRepos
 import com.fitcore.training.infrastructure.minio.adapter.MinioAdapter
 import com.fitcore.training.infrastructure.seeder.dto.ExerciseSourceDTO
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.CommandLineRunner
 import org.springframework.core.annotation.Order
 import org.springframework.core.io.ClassPathResource
@@ -22,13 +23,10 @@ class ExerciseSeeder(
     private val workoutRepositoryPort: WorkoutTemplateRepositoryPort,
     private val minioAdapter: MinioAdapter,
     private val objectMapper: ObjectMapper,
-    private val translationService: TranslationService
+    private val translationService: TranslationService,
+    @Value("\${translation.enabled:false}") private val enableTranslation: Boolean
 ) : CommandLineRunner {
     private val logger = LoggerFactory.getLogger(javaClass)
-
-    // --- CONTROLE DE TRADUÇÃO ---
-    // Alterar para 'false' para desativar tradução e economizar API calls
-    private val enableTranslation = false
 
     // --- LISTA DE EXERCÍCIOS DESEJADOS ---
     // Adicionar ou remover os IDs dos exercícios que você quer aqui.
@@ -51,6 +49,13 @@ class ExerciseSeeder(
     }
 
     override fun run(vararg args: String?) {
+        // Log da configuração de tradução
+        if (enableTranslation) {
+            logger.info("🌍 Tradução HABILITADA - API calls para DeepL serão realizadas")
+        } else {
+            logger.info("🚫 Tradução DESABILITADA - exercícios serão salvos em inglês")
+        }
+        
         // Verifica se deve limpar o banco antes de popular (parâmetro --clear-db)
         val shouldClearDatabase = args.contains("--clear-db")
         
