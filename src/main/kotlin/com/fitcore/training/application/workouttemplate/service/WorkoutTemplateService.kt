@@ -48,6 +48,38 @@ class WorkoutTemplateService(
         return workoutRepository.save(workoutTemplate).toResponse()
     }
 
+    override fun createPrivate(request: WorkoutTemplatePrivateRequest): WorkoutTemplateResponse {
+        // 1. Validar se todos os exercícios existem
+        request.items.forEach {
+            exerciseRepository.findById(it.exerciseId)
+                ?: throw ExerciseNotFoundException("Exercise with ID ${it.exerciseId} not found.")
+        }
+
+        // 2. Mapear DTOs para o modelo de domínio
+        val domainItems = request.items.map {
+            WorkoutItem(
+                exerciseId = it.exerciseId, 
+                sets = it.sets, 
+                reps = it.reps, 
+                order = it.order, 
+                restSeconds = it.restSeconds, 
+                observation = it.observation
+            )
+        }
+
+        // 3. Criar o agregado privado
+        val workoutTemplate = WorkoutTemplate(
+            name = request.name,
+            description = request.description,
+            isPublic = false,
+            items = domainItems,
+            studentIds = request.studentIds
+        )
+
+        // 4. Salvar e retornar a resposta
+        return workoutRepository.save(workoutTemplate).toResponse()
+    }
+
     override fun findById(id: UUID): WorkoutTemplateResponse {
          return workoutRepository.findById(id)?.toResponse() 
              ?: throw WorkoutTemplateNotFoundException("Workout template with ID $id not found")
@@ -83,7 +115,8 @@ class WorkoutTemplateService(
             name = workoutTemplate.name,
             description = workoutTemplate.description,
             isPublic = workoutTemplate.isPublic,
-            items = enrichedItems
+            items = enrichedItems,
+            studentIds = workoutTemplate.studentIds
         )
     }
 }

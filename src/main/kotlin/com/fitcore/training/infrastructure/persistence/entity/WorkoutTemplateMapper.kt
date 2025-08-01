@@ -8,7 +8,8 @@ fun WorkoutTemplate.toEntity() = WorkoutTemplateEntity(
     name = this.name,
     description = this.description,
     isPublic = this.isPublic,
-    items = this.items.map { it.toEntity(this.id) }
+    items = this.items.map { it.toEntity(this.id) },
+    students = this.studentIds.map { WorkoutStudentEntity(this.id, it) }
 )
 
 fun WorkoutTemplateEntity.toDomain() = WorkoutTemplate(
@@ -16,7 +17,8 @@ fun WorkoutTemplateEntity.toDomain() = WorkoutTemplate(
     name = this.name,
     description = this.description,
     isPublic = this.isPublic,
-    items = this.items.map { it.toDomain() }
+    items = this.items.map { it.toDomain() },
+    studentIds = this.students.map { it.studentId }
 )
 
 fun WorkoutItem.toEntity(templateId: java.util.UUID) = WorkoutItemEntity(

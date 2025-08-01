@@ -17,6 +17,12 @@ class WorkoutTemplateController(private val useCase: WorkoutTemplateUseCase) {
         return useCase.createPublic(request)
     }
 
+    @PostMapping("/private")
+    @ResponseStatus(HttpStatus.CREATED)
+    fun createPrivate(@RequestBody request: WorkoutTemplatePrivateRequest): WorkoutTemplateResponse {
+        return useCase.createPrivate(request)
+    }
+
     @GetMapping("/public")
     fun getPublicTemplates(): List<WorkoutTemplateResponse> {
         return useCase.findAllPublic()

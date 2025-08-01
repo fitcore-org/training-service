@@ -42,12 +42,21 @@ data class WorkoutTemplateRequest(
     val items: List<WorkoutItemRequest>
 )
 
+// DTO para criação de treinos privados
+data class WorkoutTemplatePrivateRequest(
+    val name: String, 
+    val description: String?, 
+    val items: List<WorkoutItemRequest>,
+    val studentIds: List<UUID> // IDs dos estudantes que terão acesso
+)
+
 data class WorkoutTemplateResponse(
     val id: UUID, 
     val name: String, 
     val description: String?, 
     val isPublic: Boolean,
-    val items: List<WorkoutItemResponse>
+    val items: List<WorkoutItemResponse>,
+    val studentIds: List<UUID> = emptyList() // IDs dos estudantes (vazio para treinos públicos)
 )
 
 // DTOs HIDRATADOS para o template  
@@ -56,7 +65,8 @@ data class WorkoutTemplateEnrichedResponse(
     val name: String, 
     val description: String?, 
     val isPublic: Boolean,
-    val items: List<WorkoutItemEnrichedResponse> // ← Com exercícios completos!
+    val items: List<WorkoutItemEnrichedResponse>, // ← Com exercícios completos!
+    val studentIds: List<UUID> = emptyList() // IDs dos estudantes (vazio para treinos públicos)
 )
 
 // Mappers
@@ -65,7 +75,8 @@ fun WorkoutTemplate.toResponse(): WorkoutTemplateResponse = WorkoutTemplateRespo
     name = this.name, 
     description = this.description,
     isPublic = this.isPublic,
-    items = this.items.map { it.toResponse() }
+    items = this.items.map { it.toResponse() },
+    studentIds = this.studentIds
 )
 
 fun WorkoutItem.toResponse(): WorkoutItemResponse = WorkoutItemResponse(
