@@ -24,6 +24,10 @@ class WorkoutTemplateRepositoryAdapter(
         return jpaRepository.findByIsPublicTrue().map { it.toDomain() }
     }
 
+    override fun deleteById(id: UUID) {
+        jpaRepository.deleteById(id)
+    }
+
     override fun deleteAll() {
         jpaRepository.deleteAll()
     }

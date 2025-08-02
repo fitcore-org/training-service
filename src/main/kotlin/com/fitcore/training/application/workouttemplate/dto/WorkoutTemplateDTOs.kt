@@ -14,18 +14,8 @@ data class WorkoutItemRequest(
     val order: Int
 )
 
+// DTOs para os treinos
 data class WorkoutItemResponse(
-    val id: UUID,
-    val exerciseId: UUID, 
-    val sets: String, 
-    val reps: String, 
-    val restSeconds: Int?,
-    val observation: String?,
-    val order: Int
-)
-
-// DTOs HIDRATADOS (com dados completos do exercício)
-data class WorkoutItemEnrichedResponse(
     val id: UUID,
     val exercise: ExerciseResponse, // ← Objeto completo do exercício!
     val sets: String, 
@@ -59,40 +49,11 @@ data class WorkoutTemplateResponse(
     val studentIds: List<UUID> = emptyList() // IDs dos estudantes (vazio para treinos públicos)
 )
 
-// DTOs HIDRATADOS para o template  
-data class WorkoutTemplateEnrichedResponse(
-    val id: UUID, 
-    val name: String, 
-    val description: String?, 
-    val isPublic: Boolean,
-    val items: List<WorkoutItemEnrichedResponse>, // ← Com exercícios completos!
-    val studentIds: List<UUID> = emptyList() // IDs dos estudantes (vazio para treinos públicos)
-)
-
 // Mappers
-fun WorkoutTemplate.toResponse(): WorkoutTemplateResponse = WorkoutTemplateResponse(
-    id = this.id, 
-    name = this.name, 
-    description = this.description,
-    isPublic = this.isPublic,
-    items = this.items.map { it.toResponse() },
-    studentIds = this.studentIds
-)
 
-fun WorkoutItem.toResponse(): WorkoutItemResponse = WorkoutItemResponse(
+fun WorkoutItem.toResponse(exercise: ExerciseResponse): WorkoutItemResponse = WorkoutItemResponse(
     id = this.id,
-    exerciseId = this.exerciseId, 
-    sets = this.sets, 
-    reps = this.reps, 
-    restSeconds = this.restSeconds,
-    observation = this.observation,
-    order = this.order
-)
-
-// Mappers HIDRATADOS
-fun WorkoutItem.toEnrichedResponse(exercise: ExerciseResponse): WorkoutItemEnrichedResponse = WorkoutItemEnrichedResponse(
-    id = this.id,
-    exercise = exercise, // ← Exercício completo!
+    exercise = exercise,
     sets = this.sets, 
     reps = this.reps, 
     restSeconds = this.restSeconds,

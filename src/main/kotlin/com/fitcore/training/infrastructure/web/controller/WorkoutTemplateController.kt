@@ -33,14 +33,14 @@ class WorkoutTemplateController(private val useCase: WorkoutTemplateUseCase) {
         return useCase.findById(id)
     }
 
-    // NOVOS ENDPOINTS HIDRATADOS (otimizados para mobile)
-    @GetMapping("/public/enriched")
-    fun getPublicTemplatesEnriched(): List<WorkoutTemplateEnrichedResponse> {
-        return useCase.findAllPublicEnriched()
+    @PutMapping("/{id}")
+    fun update(@PathVariable id: UUID, @RequestBody request: WorkoutTemplateRequest): WorkoutTemplateResponse {
+        return useCase.update(id, request)
     }
 
-    @GetMapping("/{id}/enriched")
-    fun getByIdEnriched(@PathVariable id: UUID): WorkoutTemplateEnrichedResponse {
-        return useCase.findByIdEnriched(id)
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun delete(@PathVariable id: UUID) {
+        useCase.delete(id)
     }
 }
