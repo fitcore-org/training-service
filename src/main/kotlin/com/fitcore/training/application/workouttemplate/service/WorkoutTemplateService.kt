@@ -94,6 +94,14 @@ class WorkoutTemplateService(
         return workoutRepository.findAllPublic().map { toResponse(it) }
     }
 
+    override fun findAllPrivate(): List<WorkoutTemplateResponse> {
+        return workoutRepository.findAllPrivate().map { toResponse(it) }
+    }
+
+    override fun findByStudentId(studentId: UUID): List<WorkoutTemplateResponse> {
+        return workoutRepository.findByStudentId(studentId).map { toResponse(it) }
+    }
+
     override fun update(id: UUID, request: WorkoutTemplateRequest): WorkoutTemplateResponse {
         // 1. Verificar se o workout existe
         val existingWorkout = workoutRepository.findById(id)

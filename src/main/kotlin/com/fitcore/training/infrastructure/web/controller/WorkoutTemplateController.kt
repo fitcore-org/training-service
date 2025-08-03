@@ -28,6 +28,16 @@ class WorkoutTemplateController(private val useCase: WorkoutTemplateUseCase) {
         return useCase.findAllPublic()
     }
 
+    @GetMapping("/private")
+    fun getPrivateTemplates(): List<WorkoutTemplateResponse> {
+        return useCase.findAllPrivate()
+    }
+
+    @GetMapping("/student/{studentId}")
+    fun getTemplatesByStudentId(@PathVariable studentId: UUID): List<WorkoutTemplateResponse> {
+        return useCase.findByStudentId(studentId)
+    }
+
     @GetMapping("/{id}")
     fun getById(@PathVariable id: UUID): WorkoutTemplateResponse {
         return useCase.findById(id)

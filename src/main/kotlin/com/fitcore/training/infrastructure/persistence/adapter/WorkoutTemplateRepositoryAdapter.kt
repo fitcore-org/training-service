@@ -24,6 +24,14 @@ class WorkoutTemplateRepositoryAdapter(
         return jpaRepository.findByIsPublicTrue().map { it.toDomain() }
     }
 
+    override fun findAllPrivate(): List<WorkoutTemplate> {
+        return jpaRepository.findByIsPublicFalse().map { it.toDomain() }
+    }
+
+    override fun findByStudentId(studentId: UUID): List<WorkoutTemplate> {
+        return jpaRepository.findByStudentId(studentId).map { it.toDomain() }
+    }
+
     override fun deleteById(id: UUID) {
         jpaRepository.deleteById(id)
     }
