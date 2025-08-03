@@ -25,7 +25,9 @@ class WorkoutTemplateRepositoryAdapter(
     }
 
     override fun findAllPrivate(): List<WorkoutTemplate> {
-        return jpaRepository.findByIsPublicFalse().map { it.toDomain() }
+        return jpaRepository.findByIsPublicFalse()
+            .filter { it.students.isNotEmpty() } // Filtrar apenas treinos com estudantes
+            .map { it.toDomain() }
     }
 
     override fun findByStudentId(studentId: UUID): List<WorkoutTemplate> {
