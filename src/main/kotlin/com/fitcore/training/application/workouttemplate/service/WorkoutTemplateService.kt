@@ -140,6 +140,44 @@ class WorkoutTemplateService(
         return toResponse(savedTemplate)
     }
 
+    override fun updatePrivate(id: UUID, request: WorkoutTemplatePrivateRequest): WorkoutTemplateResponse {
+        // 1. Verificar se o workout existe
+        val existingWorkout = workoutRepository.findById(id)
+            ?: throw WorkoutTemplateNotFoundException("Workout template with ID $id not found")
+        
+        // 2. Validar se todos os exercícios existem
+        request.items.forEach {
+            exerciseRepository.findById(it.exerciseId)
+                ?: throw ExerciseNotFoundException("Exercise with ID ${it.exerciseId} not found.")
+        }
+
+        // 3. Mapear DTOs para o modelo de domínio
+        val domainItems = request.items.map {
+            WorkoutItem(
+                exerciseId = it.exerciseId, 
+                sets = it.sets, 
+                reps = it.reps, 
+                order = it.order, 
+                restSeconds = it.restSeconds, 
+                observation = it.observation
+            )
+        }
+
+        // 4. Atualizar o workout privado
+        val updatedWorkout = WorkoutTemplate(
+            id = existingWorkout.id,
+            name = request.name,
+            description = request.description,
+            isPublic = false, // Sempre privado
+            items = domainItems,
+            studentIds = request.studentIds
+        )
+
+        // 5. Salvar e retornar a resposta
+        val savedTemplate = workoutRepository.save(updatedWorkout)
+        return toResponse(savedTemplate)
+    }
+
     override fun delete(id: UUID) {
         // Verificar se o workout existe antes de deletar
         workoutRepository.findById(id)

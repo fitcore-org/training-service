@@ -48,9 +48,20 @@ class WorkoutTemplateController(private val useCase: WorkoutTemplateUseCase) {
         return useCase.update(id, request)
     }
 
+    @PutMapping("/private/{id}")
+    fun updatePrivate(@PathVariable id: UUID, @RequestBody request: WorkoutTemplatePrivateRequest): WorkoutTemplateResponse {
+        return useCase.updatePrivate(id, request)
+    }
+
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun delete(@PathVariable id: UUID) {
+        useCase.delete(id)
+    }
+
+    @DeleteMapping("/private/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun deletePrivate(@PathVariable id: UUID) {
         useCase.delete(id)
     }
 }

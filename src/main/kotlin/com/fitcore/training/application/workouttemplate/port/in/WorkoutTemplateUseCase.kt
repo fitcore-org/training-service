@@ -13,5 +13,6 @@ interface WorkoutTemplateUseCase {
     fun findByStudentId(studentId: UUID): List<WorkoutTemplateResponse>
     
     fun update(id: UUID, request: WorkoutTemplateRequest): WorkoutTemplateResponse
+    fun updatePrivate(id: UUID, request: WorkoutTemplatePrivateRequest): WorkoutTemplateResponse
     fun delete(id: UUID)
 }
