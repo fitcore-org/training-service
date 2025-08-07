@@ -10,6 +10,6 @@ interface WorkoutTemplateJpaRepository : JpaRepository<WorkoutTemplateEntity, UU
     fun findByIsPublicTrue(): List<WorkoutTemplateEntity>
     fun findByIsPublicFalse(): List<WorkoutTemplateEntity>
     
-    @Query("SELECT w FROM WorkoutTemplateEntity w JOIN w.students s WHERE s.studentId = :studentId")
+    @Query("SELECT DISTINCT w FROM WorkoutTemplateEntity w JOIN WorkoutStudentEntity ws ON w.id = ws.workoutTemplateId WHERE ws.studentId = :studentId")
     fun findByStudentId(@Param("studentId") studentId: UUID): List<WorkoutTemplateEntity>
 }

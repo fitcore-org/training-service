@@ -13,9 +13,5 @@ class WorkoutTemplateEntity(
     @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.EAGER)
     @JoinColumn(name = "template_id")
     @OrderBy("order ASC")
-    val items: List<WorkoutItemEntity>,
-    
-    @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.EAGER)
-    @JoinColumn(name = "workout_template_id")
-    val students: List<WorkoutStudentEntity> = emptyList()
+    val items: List<WorkoutItemEntity>
 )
