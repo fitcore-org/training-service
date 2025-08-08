@@ -24,10 +24,5 @@ class WorkoutTemplate(
     init {
         require(name.isNotBlank()) { "O nome do treino não pode ser vazio." }
         require(items.isNotEmpty()) { "Um treino deve ter pelo menos um exercício." }
-        
-        // Validação de regra de negócio: treinos privados devem ter pelo menos um estudante
-        if (!isPublic) {
-            require(studentIds.isNotEmpty()) { "Treinos privados devem ter pelo menos um estudante associado." }
-        }
     }
 }
